@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+
+<html>
+
+<head>
+        <title>Collisions - Physijs</title>
+        
+
+        
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r61/three.min.js"></script>
+        <script type="text/javascript" src="js/physi.js"></script>
+          <style type="text/css">
+body{
+
+  margin: 0px;
+  padding: 0;
+    overflow: hidden;
+
+}
+
+.dir{
+    background-color: #ffffff;
+    position: absolute;
+    font-family:"Times New Roman";
+    font-size:12px;
+    font-weight:bold;
+    min-width:200px;
+    text-align:center;
+    right: 5px;
+    top: 5px;
+    opacity:0.5;
+    text-align:center;
+  border:2px solid #888888;
+  border-radius:5px;
+}
+
+
+        </style>
+        <script type="text/javascript">
+
+            'use strict';
+
+            Physijs.scripts.worker = 'js/physijs_worker.js';
+            Physijs.scripts.ammo = 'ammo.js';
+
+            var initScene, render, _boxes = [], spawnBox,
+                    renderer, render_stats, physics_stats, scene, ground_material, ground, light, camera, push = 0, currpuck = 0;
+
+            initScene = function () {
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.getElementById('viewport').appendChild(renderer.domElement);
+
+
+
+                scene = new Physijs.Scene;
+                scene.setGravity(new THREE.Vector3(0, -150, 0));
+                scene.addEventListener(
+                        'update',
+                        function () {
+                            scene.simulate(undefined, 1);
+                        }
+                );
+
+                camera = new THREE.PerspectiveCamera(
+                        35,
+                        window.innerWidth / window.innerHeight,
+                        1,
+                        1000
+                );
+
+                light = new THREE.DirectionalLight(0xFFFFFF);
+                light.position.set(20, 40, -15);
+                light.target.position.copy(scene.position);
+
+                scene.add(light);
+
+                //   camera.position.set(60, 50, 60);
+                camera.position.y = 30;
+                camera.position.z = 320;
+                camera.lookAt(scene.position);
+                scene.add(camera);
+
+
+                // Ground
+                ground_material = Physijs.createMaterial(
+                        new THREE.MeshLambertMaterial() ,
+                        .8, // high friction
+                        .3 // low restitution
+                );
+
+                ground = new Physijs.BoxMesh(
+                        new THREE.CubeGeometry(50, 2, 500),
+                        ground_material,
+                        0 // mass
+                );
+               // ground.receiveShadow = true;
+                scene.add(ground);
+                spawnBox();
+
+                requestAnimationFrame(render);
+                scene.simulate();
+            };
+            
+ 
+            function spawnBox () {
+                var box_geometry = new THREE.CylinderGeometry(4, 4,3,20,20)
+                       var x = 1;
+                            var box, material;
+                            material = Physijs.createMaterial(
+                                        new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture('images/plywood.jpg') }),   1.0,   .5 // low restitution
+                                );
+                            while (x--) {
+                 
+                     
+                                box = new Physijs.BoxMesh(
+                                        box_geometry,
+                                        material, .1
+                                );
+                             
+
+                              box.position.set(
+                                     Math.random() * 10 - 5,
+                                       30,
+                                      240
+                              );
+
+                              _boxes.push(box);
+                                scene.add(box);
+             
+                        };
+
+            };
+
+            render = function () {
+               // var px = _boxes[currpuck].getLinearVelocity();
+     
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+    
+            };
+
+            window.onload = initScene;
+            document.onkeydown = handleKeyDown;
+            document.onkeyup = handleKeyUp;
+
+            function handleKeyDown(event) {
+                // currentlyPressedKeys[event.keyCode] = true;
+
+                var x = 1;
+                if (event.keyCode == 32) {
+                  //  while (x--) {
+                        
+                    push -= 3;
+   
+                  //  }
+                   
+                }
+                else if (event.keyCode == 65) {
+                    _boxes[currpuck].position.x -= 1;
+                    scene.simulate();
+                    _boxes[currpuck].__dirtyPosition = true;
+                }
+                else if (event.keyCode == 68) {
+                    _boxes[currpuck].position.x += 1;
+                    scene.simulate();
+                    _boxes[currpuck].__dirtyPosition = true;
+                }
+            }
+
+
+            function handleKeyUp(event) {
+                //currentlyPressedKeys[event.keyCode] = false;
+
+                if (event.keyCode == 32) {
+                    _boxes[currpuck].setLinearVelocity({ z: push, y: 0, x: 0 });
+                    scene.simulate();
+       
+                    currpuck += 1;
+                    spawnBox();
+                    
+                }
+                push = 0;
+
+            }
+
+
+
+           
+        </script>
+</head>
+
+<body>
+    <div class="dir" id="dir">A - move left, D - move right <br /> Hold Space and release to slide puck<br />Longer you hold the faster it goes.</div> 
+        <div id="viewport"></div>
+</body>
+
+</html>

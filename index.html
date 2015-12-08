@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>Xanmia Code Experiments</title>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r58/three.min.js"></script>
+
+    <style type="text/css">
+      body{
+        padding: 0;
+        margin:0px;
+        color: white;
+      }
+
+        .header {
+             position:absolute;
+             top:0px;
+             height:240px;
+            padding-top:60px;
+        }
+
+
+        .part {
+             width: 100%;
+  margin: 0;
+  text-transform: uppercase;
+  text-align: center;
+  font-family: Helvetica;
+  font-size: 150px;
+  color: #fff;
+        }
+
+                .small {
+  text-transform: uppercase;
+  text-align: center;
+  font-family: Helvetica;
+  font-size: 45px;
+  color: #fff;
+        }
+
+      #back{
+        position:fixed;
+        left: 0px;
+        top: 0px;
+        width:100%;
+        height:100%;
+        z-index:-1;
+        background-image: radial-gradient(ellipse farthest-corner at center top, #3a5269 0%, #1a1a2f 70%);
+      }
+
+	.footer {
+          text-align: center;
+        width:100%;
+        background:#121220;
+        padding-top:50px;
+        padding-bottom:50px;
+	}
+
+        .footer img {
+            padding:20px;
+        }
+    .prefooter {
+        width:100%;
+        position:relative;bottom:0;height:2px;background:#4F3D2B;
+	}
+
+   .FooterText {
+        width: 100%;
+            height: 100%;
+                padding: 0;
+  margin: 0;
+  text-transform: uppercase;
+  text-align: center;
+  font-family: Helvetica;
+  font-size: 15px;
+  color: #fff;
+            padding: 20px;
+        }
+
+    .exper{
+        width:500px;
+        height:400px;
+        margin-top:25px;
+
+        border:5px solid #888888;
+        border-radius:25px;
+    }
+
+    .footer a {
+       opacity:1.0;
+    }
+
+   .footer a:hover {
+
+    }
+
+    a:hover {
+        opacity:1.0;
+        text-decoration:underline;
+    }
+    a {
+        opacity:0.5;
+        color: #FFFFFF;
+        text-decoration:none;
+    }
+
+    .fixedBackground {
+  z-index: -1;
+  overflow:hidden;
+}
+
+.dimensions {
+  width: 100%;
+  height: 300px;
+}
+
+.image {
+       background-image: radial-gradient(ellipse farthest-corner at center top, #23233f 0%, #000000 60%);
+
+}
+
+   </style>
+  </head>
+  <body><div id="back"></div>
+      <div id="head"class="fixedBackground image dimensions">
+
+          </div><div  class="header part">Kraem<span class="small"> labs</span></div>
+      <div class="prefooter"></div>
+     <div class="part" ><a href="http://js13kgames.com/games/battleship-earth-simulator/index.html"><img class="exper" src="images/bses.jpg" /> </a></div>
+      <div class="part" ><a href="http://xanmia.github.io/Blockedee/game.html"><img class="exper" src="images/blockedee.png" /> </a></div>
+	  <div class="part" ><a href="http://xanmia.github.io/Light-Speed-Ready/game.html"><img class="exper" src="images/LightSpeedReady.png" /> </a></div>
+	  <div class="part" ><a href="http://codepen.io/Xanmia/full/DedAy"><img class="exper" src="images/threemario.png" /> </a></div>
+      <div class="part" ><a href="physics/shuffleboard.html"><img class="exper" src="images/shuffleboard.png" /> </a></div>
+      <div class="part" ><a href="spaceHACK/index.html"><img class="exper" src="images/spaceHACK.png" /> </a></div>
+      <div class="part" ><a href="physics/Physt.html"><img class="exper" src="images/physics.png" /> </a></div>
+      <div class="part" ><a href="shiptastic/index.html"><img class="exper" src="images/infShip.png" /> </a> </div>
+      <div class="part" ><a href="threejsExplosion.html"><img class="exper" src="images/EXPLOSION.png" /> </a> </div>
+      <div class="part" ><a href="threejsPlane.html"><img class="exper" src="images/dynplane.png" />  </a></div>
+      <div class="part" ><a href="3Dstarfield.html"><img class="exper" src="images/3dstarfield.png" />  </a></div>
+      <div class="part" ><a href="2Dstarfield.html"><img class="exper" src="images/2dstarfield.png" /> </a></div>
+         <div class="prefooter"></div>
+      <div class="footer">
+  <a target="_blank" href="http://codepen.io/Xanmia/"><img src="images/Button-Fill-White-Large1.png" /></a> <a target="_blank" href="https://twitter.com/xanmia"><img src="images/Twitter120pxWhite.png" /></a>  <a target="_blank" href="https://github.com/xanmia"><img src="images/GitHub120pxWhite.png" /> </a>
+          </div>
+
+                 <script>
+                     var vertexHeight = 15000;
+                     var planeDefinition = 100;
+                     var planeSize = 1245000;
+                     var totalObjects = 100000;
+
+                     var container = document.getElementById('head');
+                     //document.body.appendChild(container);
+
+                     var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 400000)
+                     camera.position.z = 550000;
+                     camera.position.y = 10000;
+                     camera.lookAt(new THREE.Vector3(0, 6000, 0));
+
+
+                     var scene = new THREE.Scene();
+                     scene.fog = new THREE.Fog(0x000000, 1, 300000);
+
+
+                     var plane = new THREE.Mesh(new THREE.PlaneGeometry(planeSize, planeSize, planeDefinition, planeDefinition), new THREE.MeshBasicMaterial({ color: 0x555555, wireframe: true }));
+                     plane.rotation.x -= Math.PI * .5;
+
+                     scene.add(plane);
+
+                     var geometry = new THREE.Geometry();
+
+                     for (i = 0; i < totalObjects; i++) {
+                         var vertex = new THREE.Vector3();
+                         vertex.x = Math.random() * planeSize - (planeSize * .5);
+                         vertex.y = Math.random() * 100000;
+                         vertex.z = Math.random() * planeSize - (planeSize * .5);
+                         geometry.vertices.push(vertex);
+                     }
+
+                     var material = new THREE.ParticleBasicMaterial({ size: 200 });
+                     var particles = new THREE.ParticleSystem(geometry, material);
+
+                     scene.add(particles);
+
+                     var renderer = new THREE.WebGLRenderer();
+                     renderer.setSize(container.offsetWidth, container.offsetHeight);
+                     container.appendChild(renderer.domElement);
+
+                     updatePlane();
+
+                     function updatePlane() {
+                         for (var i = 0; i < plane.geometry.vertices.length; i++) {
+                             plane.geometry.vertices[i].z += Math.random() * vertexHeight - vertexHeight;
+                         }
+                     };
+
+
+                     render();
+
+                     function render() {
+                         requestAnimationFrame(render);
+                         camera.position.z -= 50;
+                         //  dateVerts();
+                         renderer.render(scene, camera);
+                     }
+
+
+
+
+      </script>
+  </body>
+</html>

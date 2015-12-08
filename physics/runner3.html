@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+       <title>Collisions - Physijs</title>
+       
+
+       
+       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r61/three.min.js"></script>
+       <script type="text/javascript" src="js/physi.js"></script>
+         <style type="text/css">
+body{
+
+ margin: 0px;
+ padding: 0;
+   overflow: hidden;
+
+
+}
+
+.dir{
+   background-color: #ffffff;
+   position: absolute;
+   font-family:"Times New Roman";
+   font-size:12px;
+   font-weight:bold;
+   min-width:200px;
+   text-align:center;
+   right: 5px;
+   top: 5px;
+   opacity:0.5;
+   text-align:center;
+ border:2px solid #888888;
+ border-radius:5px;
+}
+
+
+       </style>
+
+</head>
+
+<body>
+   <div class="dir" id="dir">A - move left, D - move right <br /> Hold Space and release to slide puck<br />Longer you hold the faster it goes.</div> 
+       <div id="viewport"></div>
+
+       <script type="text/javascript">
+
+           'use strict';
+
+           Physijs.scripts.worker = 'js/physijs_worker.js';
+           Physijs.scripts.ammo = 'ammo.js';
+
+           var initScene, render, _boxes = [], spawnBox,
+                   renderer, render_stats, physics_stats, scene, ground_material, ground, light, camera, push = 0, currpuck = 0;
+var boomer,player;
+
+                var playerTexture = THREE.ImageUtils.loadTexture('https://googledrive.com/host/0BzjYB_Ch9pbscTBZX3l3eGdfS1k/charwalktest2.png', {}, function() { });
+         var boardWidth = 5000;
+  var groundWidth = 50000;
+  var WIDTH = window.innerWidth;
+  var HEIGHT = window.innerHeight;
+ var cx = 0, cy = 0, cz = 0; 
+//initScene();
+
+
+//render();
+
+
+          // function initScene  () {
+               renderer = new THREE.WebGLRenderer({ antialias: true });
+               renderer.setSize(window.innerWidth, window.innerHeight);
+               document.getElementById('viewport').appendChild(renderer.domElement);
+
+
+
+               scene = new Physijs.Scene;
+               scene.setGravity(new THREE.Vector3(0, -2000, 0)); //-2000
+               scene.addEventListener(
+                       'update',
+                       function () {
+                           // player.update(1);
+                           scene.simulate(undefined, 1);
+                       }
+               );
+
+
+
+
+               camera = new THREE.PerspectiveCamera(
+                       45,
+                       window.innerWidth / window.innerHeight,
+                       1,
+                       20000
+               );
+
+               //   camera.position.set(60, 50, 60);
+              camera.position.z = 1100;//StartingZ;
+              // camera.position.x = (-boardWidth/2) + WIDTH/2; //10000
+               scene.add(camera);
+
+
+              ground = new spawnFloor();
+
+               requestAnimationFrame(render);
+               scene.simulate();
+
+               player = new spawnPlayer();
+          // };
+           
+           function spawnFloor() {
+             // Ground
+                var floorTexture = THREE.ImageUtils.loadTexture('https://googledrive.com/host/0BzjYB_Ch9pbscTBZX3l3eGdfS1k/crate.gif', {}, function() { });
+                floorTexture.wrapT = floorTexture.wrapS = THREE.RepeatWrapping;
+                floorTexture.repeat.set( 500, 1 );
+
+               ground_material = Physijs.createMaterial(
+                       new THREE.MeshBasicMaterial({ map: floorTexture }) ,
+                       .0, // high friction
+                       .0 // low restitution
+               );
+
+               this.ground = new Physijs.BoxMesh(
+                       new THREE.CubeGeometry(groundWidth, 100, 50),
+                       ground_material,
+                       0 // mass
+               );
+
+              
+                             this.ground.position.set(
+                                    0,
+                                    -200,
+                                     1
+                             );
+               scene.add(this.ground);
+              this.update = function(sep){
+                            //this.box.position.x += sep;
+                             //this.ground.setLinearVelocity({ z: this.ground._physijs.linearVelocity.z, y: this.ground._physijs.linearVelocity.y, x: 700 });
+                            // this.ground.position.x -= sep;
+                            //this.box.setLinearVelocity({ z: this.box._physijs.linearVelocity.z, y: this.box._physijs.linearVelocity.y, x: 70 });
+                          // this.ground.__dirtyPosition = true;
+               }
+           }
+
+           function spawnPlayer () {
+               var box_geometry = new THREE.PlaneGeometry(100,100,5,5)
+                  
+                           var material;
+                           boomer = new TextureAnimator( playerTexture, 6, 1, 6, 60 ); // texture, #horiz, #vert, #total, duration.
+                           material = Physijs.createMaterial(
+                                       new THREE.MeshBasicMaterial({ transparent: true, map: playerTexture }),   .0,   .1 // low restitution , map: THREE.ImageUtils.loadTexture('https://googledrive.com/host/0BzjYB_Ch9pbscTBZX3l3eGdfS1k/charwalktest2.png')
+                               );
+                         
+                  
+                    
+                               this.box = new Physijs.BoxMesh(
+                                       box_geometry,
+                                       material,
+                                       1
+                               );
+                            
+
+                             this.box.position.set(
+                                    -2000,
+                                      0,
+                                     1
+                             );
+
+                           //  _boxes.push(box);
+                           
+                               scene.add(this.box);
+           this.box.add(camera);
+           this.box.applyCentralImpulse({ z: 0, y: 0, x: 400 })
+                          this.jump = function()
+                          {
+                            this.box.applyCentralImpulse({ z: 0, y: 1200, x: 0 })
+                            this.box.setAngularFactor({x:0,y:0,z:0});
+                           // this.box.setLinearVelocity({ z: 0, y: 1200, x: 0 }); //1200 - 300
+                          }
+                         this.update = function(sep){
+                          
+                          //if(this.box.getLinearVelocity.y <> 0)
+                          //{
+                           // this.box.position.x += sep;
+                            // this.box.setLinearVelocity({ z: 0, y: 0, x: 300 });
+                           // this.box.setAngularFactor({x:0,y:0,z:0});
+                            //this.box.setLinearVelocity({ z: 0, y: 0, x: 30 });
+                        //this.box.setLinearFactor({ z: 0, y: 0, x: 200 });
+                           // this.box.__dirtyPosition = true;
+                          //}
+                          }
+
+           };
+
+           function render () {
+              // var px = _boxes[currpuck].getLinearVelocity();
+     requestAnimationFrame(render);
+               
+                 boomer.update(10);
+                player.update(2.2);
+                 //camera.position.x +=4.2;
+                // camera.lookAt(player.box.position);
+                // camera.lookAt( new THREE.Vector3(0,6000,0) );
+               //   ground.update(6);
+                
+
+              
+               renderer.render(scene, camera);
+               //  scene.simulate();
+   
+           };
+
+           
+   document.onkeydown = handleKeyDown;
+
+  function handleKeyDown(event) {
+    if(event.keyCode == 68){
+        player.jump();
+    }
+  }
+
+function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) 
+{ 
+  // note: texture passed by reference, will be updated by the update function.
+    
+  this.tilesHorizontal = tilesHoriz;
+  this.tilesVertical = tilesVert;
+  // how many images does this spritesheet contain?
+  //  usually equals tilesHoriz * tilesVert, but not necessarily,
+  //  if there at blank tiles at the bottom of the spritesheet. 
+  this.numberOfTiles = numTiles;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+  texture.repeat.set( 1 / this.tilesHorizontal, 1 / this.tilesVertical );
+
+  // how long should each image be displayed?
+  this.tileDisplayDuration = tileDispDuration;
+
+  // how long has the current image been displayed?
+  this.currentDisplayTime = 0;
+
+  // which image is currently being displayed?
+  this.currentTile = 0;
+    
+  this.update = function( milliSec )
+  {
+    this.currentDisplayTime += milliSec;
+    while (this.currentDisplayTime > this.tileDisplayDuration)
+    {
+      this.currentDisplayTime -= this.tileDisplayDuration;
+      this.currentTile++;
+      if (this.currentTile == this.numberOfTiles)
+        this.currentTile = 0;
+      var currentColumn = this.currentTile % this.tilesHorizontal;
+      texture.offset.x = currentColumn / this.tilesHorizontal;
+      var currentRow = Math.floor( this.currentTile / this.tilesHorizontal );
+      texture.offset.y = currentRow / this.tilesVertical;
+    }
+  };
+}   
+
+
+
+          
+       </script>
+</body>
+
+</html>

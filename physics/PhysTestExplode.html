@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+
+<html>
+
+<head>
+        <title>Collisions - Physijs</title>
+        
+
+        
+        <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r61/three.min.js"></script>
+        <script type="text/javascript" src="js/physi.js"></script>
+        
+        <script type="text/javascript">
+            'use strict';
+
+            Physijs.scripts.worker = 'js/physijs_worker.js';
+            Physijs.scripts.ammo = 'ammo.js';
+
+            var initScene, render, _boxes = [], spawnBox,
+                    renderer, render_stats, physics_stats, scene, ground_material, ground, light, camera;
+
+
+            scene = new Physijs.Scene;
+            scene.setGravity(new THREE.Vector3(0, -60, 0));
+            scene.addEventListener(
+                    'update',
+                    function () {
+                        scene.simulate(undefined, 1);
+                    }
+            );
+
+            //////////////settings/////////
+            var movementSpeed = 80;
+            var totalObjects = 1000;
+            var objectSize = 10;
+            var sizeRandomness = 4000;
+            var colors = [0xFF0FFF, 0xCCFF00, 0xFF000F, 0x996600, 0xFFFFFF];
+            /////////////////////////////////
+            var dirs = [];
+            var parts = [];
+            var container = document.createElement('div');
+            document.body.appendChild(container);
+
+            var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000)
+            camera.position.z = 1000;
+
+           // var scene = new THREE.Scene();
+
+            ground_material = Physijs.createMaterial(
+                      new THREE.MeshLambertMaterial({ map: THREE.ImageUtils.loadTexture('images/rocks.jpg') }),
+                      .8, // high friction
+                      .3 // low restitution
+              );
+            // ground_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
+            // ground_material.map.repeat.set(3, 3);
+
+            ground = new Physijs.BoxMesh(
+                    new THREE.CubeGeometry(100, 1, 100),
+                    ground_material,
+                    0 // mass
+            );
+            // ground.receiveShadow = true;
+            scene.add(ground);
+
+            function ExplodeAnimation(x, y) {
+                var geometry = new THREE.Geometry();
+
+                material = Physijs.createMaterial(
+                                  new THREE.MeshBasicMaterial({ wireframe: true }),  // map: THREE.ImageUtils.loadTexture('images/plywood.jpg')
+                                  .6, // medium friction
+                                  .3 // low restitution
+                          );
+
+                box = new Physijs.BoxMesh(
+                        box_geometry,
+                        material
+                );
+
+                for (i = 0; i < totalObjects; i++) {
+                    var vertex = new THREE.Vector3();
+                    vertex.x = x;
+                    vertex.y = y;
+                    vertex.z = 0;
+
+                    geometry.vertices.push(vertex);
+                    dirs.push({ x: (Math.random() * movementSpeed) - (movementSpeed / 2), y: (Math.random() * movementSpeed) - (movementSpeed / 2), z: (Math.random() * movementSpeed) - (movementSpeed / 2) });
+                }
+                var material = Physijs.createMaterial(new THREE.ParticleBasicMaterial({ size: objectSize, color: colors[Math.round(Math.random() * colors.length)] }),   .6,  .3  );
+                var particles = new THREE.ParticleSystem(geometry, material);
+
+                this.object = particles;
+                this.status = true;
+
+                this.xDir = (Math.random() * movementSpeed) - (movementSpeed / 2);
+                this.yDir = (Math.random() * movementSpeed) - (movementSpeed / 2);
+                this.zDir = (Math.random() * movementSpeed) - (movementSpeed / 2);
+
+                scene.add(this.object);
+
+                this.update = function () {
+                    if (this.status == true) {
+                        var pCount = totalObjects;
+                        while (pCount--) {
+                            var particle = this.object.geometry.vertices[pCount]
+                            particle.y += dirs[pCount].y;
+                            particle.x += dirs[pCount].x;
+                            particle.z += dirs[pCount].z;
+                        }
+                        this.object.geometry.verticesNeedUpdate = true;
+                    }
+                }
+
+            }
+
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            renderer.render(scene, camera);
+            parts.push(new ExplodeAnimation(0, 0));
+            scene.simulate();
+            render();
+
+            function render() {
+                requestAnimationFrame(render);
+
+                var pCount = parts.length;
+                while (pCount--) {
+                    parts[pCount].update();
+                }
+
+                renderer.render(scene, camera);
+
+            }
+
+            window.addEventListener('mousedown', onclick, false);
+            window.addEventListener('resize', onWindowResize, false);
+
+            function onclick() {
+                event.preventDefault();
+                parts.push(new ExplodeAnimation((Math.random() * sizeRandomness) - (sizeRandomness / 2), (Math.random() * sizeRandomness) - (sizeRandomness / 2)));
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+            }
+
+
+
+            spawnBox = (function () {
+                var box_geometry = new THREE.CubeGeometry(4, 4, 4),
+                       
+                        createBox = function () {
+                            var box, material;
+
+                            material = Physijs.createMaterial(
+                                    new THREE.MeshBasicMaterial({ wireframe: true }),  // map: THREE.ImageUtils.loadTexture('images/plywood.jpg')
+                                    .6, // medium friction
+                                    .3 // low restitution
+                            );
+
+                            box = new Physijs.BoxMesh(
+                                    box_geometry,
+                                    material
+                            );
+                          //  box.collisions = 0;
+
+                            box.position.set(
+                                    Math.random() * 15 - 7.5,
+                                    25,
+                                    Math.random() * 15 - 7.5
+                            );
+
+                         //   box.rotation.set(
+                          //          Math.random() * Math.PI,
+                          //          Math.random() * Math.PI,
+                          //          Math.random() * Math.PI
+                          //  );
+
+                            box.addEventListener('ready', spawnBox);
+                            scene.add(box);
+                        };
+
+                return function () {
+                    setTimeout(createBox, 1000);
+                };
+            })();
+
+
+
+        </script>
+</head>
+
+<body>
+        <div id="heading">
+                <h1>Collisions</h1>
+                <p>Demonstrating the collision callback</p>
+        </div>
+        <div id="viewport"></div>
+</body>
+
+</html>
