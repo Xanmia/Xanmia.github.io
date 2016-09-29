@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <h1>Current Retail Stores</h1>
+    <p id="stores"></p>
+    
+    <h1>Your location</h1>
+    <p id="demo"></p>
+
+    <h1>Your Closest Store is:</h1>
+    <p id="closest"></p>
+
+    <script>
+        var stores = [{ "name": "Cincinnati", "lat": 39.1042167, "lon": -84.2799764, "dist":0 },
+                      { "name": "Columbus", "lat": 39.9234152, "lon": -83.1731886, "dist": 0 },
+                      { "name": "San Fran", "lat": 37.7577627, "lon": -122.4726194, "dist": 0 }
+        ];
+        
+        var showstores = document.getElementById("stores");
+        var YourLoc = document.getElementById("demo");
+        var ClosestStore = document.getElementById("closest");
+  
+        navigator.geolocation.getCurrentPosition(getClosestStore);
+
+        function getClosestStore(position) {
+
+            for (s in stores) {
+                var dist = distance(position.coords.latitude, position.coords.longitude, stores[s].lat, stores[s].lon, "N");
+                stores[s].dist = Math.round(dist);
+
+                showstores.innerHTML += stores[s].name + " " + stores[s].dist + " Miles<br>";
+
+
+            }
+
+            stores.sort(function (a, b) {
+                if (a.dist > b.dist) {
+                    return 1;
+                }
+                if (a.dist < b.dist) {
+                    return -1;
+                }
+                return 0;
+            });
+
+            YourLoc.innerHTML = "Latitude: " + position.coords.latitude +
+            "<br>Longitude: " + position.coords.longitude + "<br>Miles: " + dist;
+
+            ClosestStore.innerHTML = stores[0].name + " " + stores[0].dist + " miles away";
+        }
+   
+
+        function distance(lat1, lon1, lat2, lon2, unit) {
+            var radlat1 = Math.PI * lat1 / 180
+            var radlat2 = Math.PI * lat2 / 180
+            var radlon1 = Math.PI * lon1 / 180
+            var radlon2 = Math.PI * lon2 / 180
+            var theta = lon1 - lon2
+            var radtheta = Math.PI * theta / 180
+            var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+            dist = Math.acos(dist)
+            dist = dist * 180 / Math.PI
+            dist = dist * 60 * 1.1515
+            if (unit == "K") { dist = dist * 1.609344 }
+            if (unit == "N") { dist = dist * 0.8684 }
+            return dist
+        }
+
+    </script>
+
+</body>
+</html>
